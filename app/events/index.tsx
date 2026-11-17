@@ -1,17 +1,30 @@
 
 import { useState } from 'react';
-import { FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { router } from 'expo-router';
-import { events } from '../../src/data/events';
 import EventRow from '../../src/components/EventRow';
+import { useEvents } from '../../src/hooks/useEvents';
 
 export default function EventsScreen() {
   const [savedIds, setSavedIds] = useState<number[]>([]);
   const [search, setSearch] = useState('');
 
-  const filteredEvents = events.filter((event) =>
-    event.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const {
+    data,
+    isPending,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useEvents();
 
   function toggleSaved(id: number) {
     setSavedIds((previous) =>
@@ -20,6 +33,32 @@ export default function EventsScreen() {
         : [...previous, id]
     );
   }
+
+  if (isPending) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.message}>Loading events</Text>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.message}>Could not load events</Text>
+        <Text style={styles.errorMessage}>{error.message}</Text>
+
+        <Pressable style={styles.button} onPress={() => refetch()}>
+          <Text style={styles.buttonText}>Try again</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
+  const filteredEvents = data.filter((event) =>
+    event.title.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>
@@ -40,11 +79,13 @@ export default function EventsScreen() {
         renderItem={({ item }) => (
           <EventRow
             event={item}
-            saved={savedIds.includes(Number(item.id))}
+            saved={savedIds.includes(item.id)}
             onPress={() => router.push(`/events/${item.id}`)}
-            onLongPress={() => toggleSaved(Number(item.id))}
+            onLongPress={() => toggleSaved(item.id)}
           />
         )}
+        refreshing={isRefetching}
+        onRefresh={() => refetch()}
         ListEmptyComponent={
           <Text style={styles.empty}>No events match.</Text>
         }
@@ -58,6 +99,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: 16,
+  },
+  center: {
+    flex: 1,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  message: {
+    fontSize: 18,
+    marginTop: 12,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: 15,
+    color: '#dc2626',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   instructions: {
     fontSize: 15,
