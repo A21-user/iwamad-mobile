@@ -25,6 +25,9 @@
     },
     "experiments": {
       "baseUrl": "/iwamad-mobile"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
