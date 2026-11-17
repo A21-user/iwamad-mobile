@@ -26,7 +26,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "export:web": "expo export --platform web --output-dir docs && cp docs/index.html docs/404.html && touch docs/.nojekyll"
+    "export:web": "expo export --platform web --output-dir docs && mkdir -p docs/api && cp public/api/events.json docs/api/events.json && cp docs/index.html docs/404.html && touch docs/.nojekyll"
   },
   "private": true
 }
