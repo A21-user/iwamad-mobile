@@ -1,7 +1,9 @@
 
 import type { CampusEvent } from '../data/events';
+
 export const API_URL =
   'https://A21-user.github.io/iwamad-mobile/api/events.json';
+
 export async function fetchEvents(): Promise<CampusEvent[]> {
   const response = await fetch(API_URL);
 

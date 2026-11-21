@@ -12,9 +12,10 @@ import {
 import { router } from 'expo-router';
 import EventRow from '../../src/components/EventRow';
 import { useEvents } from '../../src/hooks/useEvents';
+import { useSavedIds } from '../../src/hooks/useSavedIds';
 
 export default function EventsScreen() {
-  const [savedIds, setSavedIds] = useState<number[]>([]);
+  const { savedIds, toggleSaved } = useSavedIds();
   const [search, setSearch] = useState('');
 
   const {
@@ -25,14 +26,6 @@ export default function EventsScreen() {
     refetch,
     isRefetching,
   } = useEvents();
-
-  function toggleSaved(id: number) {
-    setSavedIds((previous) =>
-      previous.includes(id)
-        ? previous.filter((savedId) => savedId !== id)
-        : [...previous, id]
-    );
-  }
 
   if (isPending) {
     return (
@@ -49,7 +42,10 @@ export default function EventsScreen() {
         <Text style={styles.message}>Could not load events</Text>
         <Text style={styles.errorMessage}>{error.message}</Text>
 
-        <Pressable style={styles.button} onPress={() => refetch()}>
+        <Pressable
+          style={styles.button}
+          onPress={() => refetch()}
+        >
           <Text style={styles.buttonText}>Try again</Text>
         </Pressable>
       </View>
@@ -63,7 +59,7 @@ export default function EventsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.instructions}>
-        Long-press an event to save it. Saved: {savedIds.length}
+        Swipe or long-press an event to save it. Saved: {savedIds.length}
       </Text>
 
       <TextInput
@@ -81,7 +77,7 @@ export default function EventsScreen() {
             event={item}
             saved={savedIds.includes(item.id)}
             onPress={() => router.push(`/events/${item.id}`)}
-            onLongPress={() => toggleSaved(item.id)}
+            onToggleSaved={() => toggleSaved(item.id)}
           />
         )}
         refreshing={isRefetching}
